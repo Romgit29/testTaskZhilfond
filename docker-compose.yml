@@ -1,0 +1,43 @@
+version: '3'
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: testTaskZhilfond_php-fpm
+    hostname: testTaskZhilfond_php-fpm
+    working_dir: /var/www/proj
+    depends_on:
+      - postgres
+    environment:
+      - "ENV_SUBSTITUTION_ENABLE=true"
+      - "PHP_MEMORY_LIMIT=512M"
+      - "PHP_FPM_LISTEN=9000"
+      - "PHP_SESSION_GC_MAXLIFETIME=7200"
+    volumes:
+      - ./src:/var/www/proj:rw
+
+  nginx:
+    image: nginx:latest
+    container_name: testTaskZhilfond_nginx
+    hostname: testTaskZhilfond_nginx
+    ports:
+      - 8082:80
+    volumes:
+      - ./src:/var/www/proj
+      - ./nginx/conf:/etc/nginx/conf.d
+      - ./nginx/logs:/var/log/nginx/
+    depends_on:
+      - php
+
+  postgres:
+    container_name: testTaskZhilfond_pgsql
+    image: postgres:latest
+    ports: 
+      - 5050:5432
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data:rw
+    environment: 
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: dev
+      POSTGRES_USER: dev
