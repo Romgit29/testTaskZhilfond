@@ -12,7 +12,7 @@
                             <div>{{$product->cost}}₽</div>
                         </div>
                         <div style='display:flex; padding:5px; padding-left:15px; align-items:center;'>
-                            <form method="POST" action="{{route('products.addProductsBasket')}}">
+                            <form method="POST" action="{{route('basket.add')}}">
                                 @csrf
                                 <input type="number" name='count' value="1">
                                 <input type="hidden" name='product_id' value='{{$product->id}}'>

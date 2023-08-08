@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Basket;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use League\CommonMark\Extension\CommonMark\Node\Inline\Link;
+use Illuminate\Support\Facades\Auth;
 
 class ProductsController extends Controller
 {
     public function create()
     {
+        $auth = Auth::user();
+        if(!$auth->hasRole('admin')) return back();
         return view('products.create');
     }
 
@@ -31,40 +31,6 @@ class ProductsController extends Controller
         internalErrorResponse($result);
         
         return back()->withSuccess('Product added successfully!');
-    }
-
-    public function addProductsBasket(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'count' => 'required|integer|min:1',
-            'product_id' => 'required|integer|min:1|exists:products,id'
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator->errors())->withInput();
-        }
-
-        $productsInBasket = Basket::where('user_id', Auth::id())
-        ->where('product_id', $request['product_id'])
-        ->select('count')
-        ->first();
-        
-        if($productsInBasket !== null) {
-            $count = $productsInBasket->count + $request['count'];
-            $result = Basket::where('user_id', Auth::id())
-            ->where('product_id', $request['product_id'])
-            ->update(['count' => $count]);
-        } else {
-            $result = Basket::create( [
-                'user_id' => Auth::id(),
-                'product_id' => $request['product_id'],
-                'count' => $request['count']
-            ]);
-        }
-
-        internalErrorResponse($result);
-        
-        return back()->withSuccess('Products added successfully!');
     }
 
     public function list()
